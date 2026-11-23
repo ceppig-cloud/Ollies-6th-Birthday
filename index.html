@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>You’re invited!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+/* ============================================================
+   ✏️  EDIT YOUR PARTY DETAILS HERE
+   ============================================================ */
+const PARTY = {
+  name: "Ollie",                          // birthday kid's name
+  age: 6,                                 // the age they're turning
+  movie: "",                              // optional: the movie you're seeing
+  start: "2026-12-12T14:00",              // date + showtime (24-hr)
+  hours: 2.5,                             // how long the party lasts
+  place: "Starlight Cinema",              // theater name
+  address: "123 Main St, Denver, CO",     // shown as a map link
+  rsvpBy: "2026-12-05",                   // RSVP deadline
+  note: "Join us for a movie, popcorn, and cake!",
+  details: [                              // extra info shown at the top (add or remove lines)
+    "Please arrive 15 minutes early so we can grab snacks before the movie.",
+    "Pickup is in the theater lobby."
+  ],
+  hostName: "Cari",                       // who's hosting
+  scriptUrl: ""                           // paste your Apps Script Web App URL here
+};
+/* ============================================================ */
+</script>
+<style>
+:root{
+  --curtain:#6E0F1F; --curtain-deep:#3E0611; --gold:#F2C14E; --bulb:#FFE9A8;
+  --ticket:#F7E8C4; --ticket-edge:#EAD5A3; --red:#B3192E; --ink:#2A1A12; --soft:#7A5E45;
+  --field:#FFF8E6; --line:#D9C08A;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --curtain:#4A0914; --curtain-deep:#1C0308; --ticket:#F1E0B8; --field:#FBF1D8; color-scheme:dark; }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%}
+body{
+  margin:0; min-height:100%; color:var(--ink);
+  font:17px/1.5 "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 2px, transparent 2px 38px, rgba(255,255,255,.04) 38px 44px, transparent 44px 70px),
+    radial-gradient(ellipse at 50% -10%, #A3233A 0%, var(--curtain) 45%, var(--curtain-deep) 100%);
+  background-attachment:fixed;
+}
+main{max-width:520px; margin:0 auto; padding:28px 16px 48px}
+.slab{font-family:"Alfa Slab One", "Rockwell", Georgia, serif; font-weight:400}
+.cond{font-family:"Barlow Condensed", "Arial Narrow", sans-serif}
+
+/* ---------- ticket shape (scalloped sides) ---------- */
+.ticket-wrap{filter:drop-shadow(0 18px 24px rgba(0,0,0,.45))}
+.ticket{
+  background:var(--ticket); position:relative;
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent 7px, #000 7.5px) left/51% 20px repeat-y,
+    radial-gradient(circle at 100% 50%, transparent 7px, #000 7.5px) right/51% 20px repeat-y;
+          mask:
+    radial-gradient(circle at 0 50%, transparent 7px, #000 7.5px) left/51% 20px repeat-y,
+    radial-gradient(circle at 100% 50%, transparent 7px, #000 7.5px) right/51% 20px repeat-y;
+}
+.ticket::before{ /* inner printed border */
+  content:""; position:absolute; inset:14px 20px; border:2px solid var(--red); border-radius:6px; pointer-events:none; opacity:.55
+}
+
+/* ---------- marquee header ---------- */
+.marquee{margin:24px 30px 0; background:var(--red); color:var(--ticket); border-radius:8px; padding:18px 18px 16px; text-align:center; position:relative}
+.bulbs{display:flex; justify-content:space-between; position:absolute; left:10px; right:10px}
+.bulbs.t{top:6px} .bulbs.b{bottom:6px}
+.bulbs i{width:7px; height:7px; border-radius:50%; background:var(--bulb); box-shadow:0 0 6px var(--gold)}
+@media (prefers-reduced-motion: no-preference){
+  .bulbs i{animation:chase 1.2s steps(1) infinite}
+  .bulbs i:nth-child(3n+2){animation-delay:.4s} .bulbs i:nth-child(3n+3){animation-delay:.8s}
+}
+@keyframes chase{0%{opacity:1}33%{opacity:.25}}
+.now{font-size:18px; font-weight:600; letter-spacing:.06em; color:var(--gold); margin:4px 0 2px}
+h1{font-size:clamp(30px, 8.5vw, 42px); line-height:1.05; margin:0; color:#FFF6E0; text-shadow:0 2px 0 var(--curtain-deep)}
+.movie{margin:6px 0 2px; font-size:19px; font-weight:600; color:var(--bulb)}
+
+/* ---------- extra details ---------- */
+.extra{margin:16px 40px 0; background:var(--field); border:2px dashed var(--red); border-radius:8px; padding:12px 16px}
+.extra h2{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:20px; color:var(--red); margin:0 0 4px}
+.extra ul{margin:0; padding-left:20px}
+.extra li{margin:3px 0}
+
+/* ---------- details ---------- */
+.top{padding:18px 40px 22px; position:relative}
+.stamp{
+  position:absolute; right:34px; top:8px; width:96px; height:96px; border-radius:50%;
+  border:3px solid var(--red); color:var(--red); display:grid; place-items:center; text-align:center;
+  transform:rotate(-14deg); opacity:.88; line-height:1
+}
+.stamp b{display:block; font-family:"Alfa Slab One",serif; font-weight:400; font-size:44px}
+.stamp span{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:14px}
+.note{margin:6px 110px 18px 0; font-size:18px}
+.fields{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin:0}
+.fields div{border-top:2px dotted var(--line); padding-top:6px}
+.fields dt{font-family:"Barlow Condensed",sans-serif; font-weight:700; color:var(--red); font-size:16px}
+.fields dd{margin:0; font-weight:600}
+.fields .wide{grid-column:1/-1}
+.fields a{color:var(--ink); text-decoration-color:var(--red); text-underline-offset:3px}
+.cal{margin-top:16px; background:none; border:2px solid var(--ink); color:var(--ink); border-radius:999px; padding:7px 16px; font:inherit; font-weight:700; cursor:pointer}
+.cal:hover{background:var(--ink); color:var(--ticket)}
+
+/* ---------- tear line ---------- */
+.tear{position:relative; height:30px; display:flex; align-items:center; justify-content:center}
+.tear::before{content:""; position:absolute; left:28px; right:28px; top:50%; border-top:3px dashed var(--soft); opacity:.6}
+.tear span{position:relative; background:var(--ticket); padding:0 10px; font-family:"Barlow Condensed",sans-serif; font-weight:600; color:var(--soft); font-size:15px}
+
+/* ---------- stub ---------- */
+.stub{padding:14px 40px 34px; transition:transform .7s cubic-bezier(.3,.7,.3,1.2), opacity .5s}
+.admit{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--red); padding-bottom:6px; margin-bottom:12px}
+.admit .slab{color:var(--red); font-size:26px}
+.admit .cond{color:var(--soft); font-weight:600; font-size:16px}
+.stub h2{font-family:"Barlow Condensed",sans-serif; font-size:26px; font-weight:700; margin:0}
+.due{color:var(--soft); margin:0 0 14px}
+label.lbl{display:block; font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:18px; margin:14px 0 5px}
+input[type=text],textarea{
+  width:100%; font:inherit; color:var(--ink); background:var(--field);
+  border:2px solid var(--line); border-radius:8px; padding:10px 12px;
+}
+textarea{min-height:72px; resize:vertical}
+input:focus,textarea:focus{outline:none; border-color:var(--red)}
+.choices{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.choice{
+  font:inherit; font-weight:700; cursor:pointer; color:var(--ink); background:var(--field);
+  border:2px solid var(--line); border-radius:8px; padding:11px 4px;
+  display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.15
+}
+.choice .e{font-size:26px}
+.choice[aria-pressed=true]{border-color:var(--red); background:#FBD9D5; box-shadow:inset 0 0 0 1px var(--red)}
+.counts{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.stepper{display:flex; align-items:center; justify-content:space-between; border:2px solid var(--line); border-radius:8px; padding:5px; background:var(--field)}
+.stepper button{width:38px; height:38px; border-radius:6px; border:none; background:var(--ticket-edge); color:var(--ink); font-size:22px; font-weight:700; cursor:pointer}
+.names{margin-top:4px}
+.names .grp{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:18px; margin:14px 0 2px}
+.names input{margin-top:6px}
+.stepper output{font-family:"Alfa Slab One",serif; font-size:22px}
+.send{
+  width:100%; margin-top:20px; font-family:"Alfa Slab One",serif; font-size:20px; letter-spacing:.02em;
+  background:var(--red); color:#FFF6E0; border:none; border-radius:8px; padding:14px; cursor:pointer;
+  box-shadow:0 4px 0 #7D0F1F
+}
+.send:active{transform:translateY(2px); box-shadow:0 2px 0 #7D0F1F}
+.send:disabled{opacity:.6; cursor:wait}
+.err{color:var(--red); font-weight:700; margin:12px 0 0; min-height:1em}
+.hide{display:none !important}
+:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+
+.stub.torn{transform:translateY(60px) rotate(-5deg); opacity:0}
+.thanks{padding:22px 40px 38px; text-align:center}
+.thanks .big{font-size:60px; line-height:1}
+.thanks h2{font-family:"Alfa Slab One",serif; font-weight:400; font-size:28px; margin:10px 0 6px; color:var(--red)}
+.thanks p{margin:0 auto 14px; max-width:32ch}
+.link{background:none; border:none; color:inherit; font:inherit; font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:4px}
+
+/* ---------- host ---------- */
+footer{text-align:center; margin-top:22px; color:var(--bulb); font-size:15px}
+.banner{background:var(--gold); color:var(--ink); border-radius:8px; padding:10px 14px; margin-bottom:16px; font-weight:600; font-size:15px}
+.host{background:var(--ticket); border-radius:10px; padding:22px; margin-top:18px; box-shadow:0 14px 24px rgba(0,0,0,.4)}
+.host h2{font-family:"Alfa Slab One",serif; font-weight:400; margin:0; font-size:24px; color:var(--red)}
+.row{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px}
+.tally{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px}
+.tally div{border:2px solid var(--line); border-radius:8px; padding:10px 6px; text-align:center; background:var(--field)}
+.tally b{display:block; font-family:"Alfa Slab One",serif; font-weight:400; font-size:30px; line-height:1.1}
+.tally span{font-family:"Barlow Condensed",sans-serif; font-size:16px; font-weight:700; color:var(--soft)}
+.tally em{display:block; font-style:normal; font-size:13px; color:var(--soft)}
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:15px}
+th,td{text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
+.pill{display:inline-block; border-radius:999px; padding:1px 10px; font-weight:700; font-size:13px}
+.pill.yes{background:#CDEBC6} .pill.no{background:#F6C9C3} .pill.maybe{background:#F7DF9C}
+.hostMsg{color:var(--soft); margin:12px 0 0}
+
+#popcorn{position:fixed; inset:0; pointer-events:none; z-index:20}
+@media (prefers-reduced-motion: reduce){ .stub{transition:none} }
+@media (max-width:420px){
+  .marquee{margin:22px 26px 0} .extra{margin:14px 34px 0}
+  .top{padding:16px 34px 20px} .stub,.thanks{padding-left:34px; padding-right:34px}
+  .stamp{width:80px; height:80px; right:28px} .stamp b{font-size:36px}
+  .note{margin-right:84px}
+}
+</style>
+</head>
+<body>
+<canvas id="popcorn" aria-hidden="true"></canvas>
+<main>
+  <div id="demo" class="banner hide">Preview mode: RSVPs are saved on this device only until you add your Apps Script link.</div>
+
+  <div class="ticket-wrap">
+  <article class="ticket">
+    <header class="marquee">
+      <div class="bulbs t" aria-hidden="true"></div>
+      <p class="now cond">Now showing</p>
+      <h1 class="slab" id="title"></h1>
+      <p class="movie cond hide" id="movie"></p>
+      <div class="bulbs b" aria-hidden="true"></div>
+    </header>
+
+    <section class="extra hide" id="extra" aria-labelledby="extraH">
+      <h2 id="extraH">Good to know</h2>
+      <ul id="extraList"></ul>
+    </section>
+
+    <section class="top">
+      <div class="stamp" aria-hidden="true"><div><b id="ageNum"></b><span>years old!</span></div></div>
+      <p class="note" id="note"></p>
+      <dl class="fields">
+        <div><dt>Date</dt><dd id="date"></dd></div>
+        <div><dt>Showtime</dt><dd id="time"></dd></div>
+        <div class="wide"><dt>Theater</dt><dd id="where"></dd></div>
+        <div class="wide"><dt>Hosted by</dt><dd id="host"></dd></div>
+      </dl>
+      <button class="cal" id="calBtn" type="button">📅 Add to my calendar</button>
+    </section>
+
+    <div class="tear" aria-hidden="true"><span>✂ Tear here to RSVP</span></div>
+
+    <section class="stub" id="stub" aria-labelledby="rsvpH">
+      <div class="admit"><span class="slab">Admit one</span><span class="cond" id="ticketNo"></span></div>
+      <h2 id="rsvpH">Will you be there?</h2>
+      <p class="due" id="due"></p>
+
+      <div class="choices" role="group" aria-label="Your answer">
+        <button type="button" class="choice" data-v="yes" aria-pressed="false"><span class="e">🍿</span>Save our seats</button>
+        <button type="button" class="choice" data-v="maybe" aria-pressed="false"><span class="e">🤔</span>Not sure yet</button>
+        <button type="button" class="choice" data-v="no" aria-pressed="false"><span class="e">💌</span>Can’t make it</button>
+      </div>
+
+      <label class="lbl" for="name">Family name</label>
+      <input type="text" id="name" maxlength="80" autocomplete="family-name" placeholder="e.g. The Garcias">
+
+      <div id="countsWrap">
+        <div class="counts">
+          <div>
+            <label class="lbl" id="kidsL">Kids</label>
+            <div class="stepper" role="group" aria-labelledby="kidsL">
+              <button type="button" data-step="kids" data-d="-1" aria-label="One fewer kid">−</button>
+              <output id="kids">1</output>
+              <button type="button" data-step="kids" data-d="1" aria-label="One more kid">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="lbl" id="adultsL">Grown-ups</label>
+            <div class="stepper" role="group" aria-labelledby="adultsL">
+              <button type="button" data-step="adults" data-d="-1" aria-label="One fewer grown-up">−</button>
+              <output id="adults">1</output>
+              <button type="button" data-step="adults" data-d="1" aria-label="One more grown-up">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="names" id="names"></div>
+      </div>
+
+      <button class="send" id="send" type="button">Send RSVP</button>
+      <p class="err" id="err" role="alert"></p>
+    </section>
+
+    <section class="thanks hide" id="thanks" aria-live="polite">
+      <div class="big" id="tEmoji"></div>
+      <h2 id="tHead"></h2>
+      <p id="tMsg"></p>
+      <button class="link" id="again" type="button">Change my RSVP</button>
+    </section>
+  </article>
+  </div>
+
+  <section class="host hide" id="hostPanel" aria-labelledby="hostH">
+    <div class="row">
+      <h2 id="hostH">Box office</h2>
+      <button class="link" id="refresh" type="button">Refresh</button>
+    </div>
+    <div class="tally">
+      <div><b id="cYes">0</b><span>Seats saved</span><em id="cYesSub"></em></div>
+      <div><b id="cMaybe">0</b><span>Maybe</span></div>
+      <div><b id="cNo">0</b><span>Can’t come</span></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Name</th><th>Answer</th><th>Kids</th><th>Adults</th><th>Guests</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="hostMsg" id="hostMsg"></p>
+  </section>
+
+  <footer><button class="link" id="hostBtn" type="button">Party host? See responses</button></footer>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const LS_KEY = "rsvp-demo-" + PARTY.name;
+  const demo = !PARTY.scriptUrl;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- marquee bulbs ---------- */
+  document.querySelectorAll(".bulbs").forEach(b => { for (let i=0;i<14;i++) b.append(document.createElement("i")); });
+
+  /* ---------- fill invite ---------- */
+  const start = new Date(PARTY.start);
+  const end = new Date(start.getTime() + PARTY.hours*3600000);
+  const dFmt = new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"});
+  const tFmt = new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"});
+  const possessive = /s$/i.test(PARTY.name) ? PARTY.name + "’" : PARTY.name + "’s";
+  $("title").textContent = possessive + " " + ordinal(PARTY.age) + " Birthday";
+  if (PARTY.movie) { $("movie").textContent = "Feature presentation: " + PARTY.movie; $("movie").classList.remove("hide"); }
+  $("ageNum").textContent = PARTY.age;
+  $("note").textContent = PARTY.note;
+  const extras = (PARTY.details || []).filter(s => String(s).trim());
+  if (extras.length) {
+    $("extraList").replaceChildren(...extras.map(s => { const li = document.createElement("li"); li.textContent = s; return li; }));
+    $("extra").classList.remove("hide");
+  }
+  $("date").textContent = dFmt.format(start);
+  $("time").textContent = tFmt.format(start) + "–" + tFmt.format(end);
+  const map = document.createElement("a");
+  map.href = "https://maps.google.com/?q=" + encodeURIComponent(PARTY.place + ", " + PARTY.address);
+  map.target = "_blank"; map.rel = "noopener";
+  map.textContent = PARTY.place;
+  $("where").append(map, document.createElement("br"), PARTY.address);
+  $("host").textContent = PARTY.hostName;
+  const rsvpBy = new Date(PARTY.rsvpBy + "T23:59");
+  $("due").textContent = "Please reply by " + dFmt.format(rsvpBy) + ".";
+  $("ticketNo").textContent = "No. " + String(start.getMonth()+1).padStart(2,"0") + String(start.getDate()).padStart(2,"0") + "0" + PARTY.age;
+  document.title = "You’re invited to " + possessive + " movie party!";
+  if (demo) $("demo").classList.remove("hide");
+
+  function ordinal(n){const s=["th","st","nd","rd"], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]);}
+
+  /* ---------- calendar file ---------- */
+  $("calBtn").onclick = () => {
+    const f = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+    const esc = s => String(s).replace(/[,;\\]/g, m => "\\"+m);
+    const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//RSVP//EN","BEGIN:VEVENT",
+      "UID:"+Date.now()+"@rsvp","DTSTAMP:"+f(new Date()),"DTSTART:"+f(start),"DTEND:"+f(end),
+      "SUMMARY:"+esc(possessive+" birthday movie party"),"LOCATION:"+esc(PARTY.place+", "+PARTY.address),
+      "DESCRIPTION:"+esc(PARTY.note),"END:VEVENT","END:VCALENDAR"].join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
+    a.download = "birthday-party.ics"; a.click();
+  };
+
+  /* ---------- form state ---------- */
+  let answer = null; const counts = {kids:1, adults:1};
+  document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+    answer = b.dataset.v;
+    document.querySelectorAll(".choice").forEach(x => x.setAttribute("aria-pressed", x===b));
+    $("countsWrap").classList.toggle("hide", answer === "no");
+    $("err").textContent = "";
+  });
+  document.querySelectorAll("[data-step]").forEach(b => b.onclick = () => {
+    const k = b.dataset.step; counts[k] = Math.max(0, Math.min(10, counts[k] + Number(b.dataset.d)));
+    $(k).textContent = counts[k];
+    renderNames();
+  });
+
+  /* one name box per person, keeping anything already typed */
+  const typed = {kids:[], adults:[]};
+  function renderNames(){
+    document.querySelectorAll("#names input").forEach(i => typed[i.dataset.g][i.dataset.n] = i.value);
+    const wrap = $("names"); wrap.replaceChildren();
+    [["kids","Kid"],["adults","Grown-up"]].forEach(([g,word]) => {
+      if (!counts[g]) return;
+      const h = document.createElement("p"); h.className = "grp";
+      h.textContent = counts[g] === 1 ? word + "’s name" : word + "s’ names";
+      wrap.append(h);
+      for (let n=0; n<counts[g]; n++){
+        const i = document.createElement("input");
+        i.type = "text"; i.maxLength = 40; i.dataset.g = g; i.dataset.n = n;
+        i.placeholder = word + " " + (n+1);
+        i.setAttribute("aria-label", word + " " + (n+1) + " name");
+        i.value = typed[g][n] || "";
+        wrap.append(i);
+      }
+    });
+  }
+  renderNames();
+  function guestNames(){
+    const pick = g => Array.from(document.querySelectorAll('#names input[data-g="'+g+'"]')).map(i => i.value.trim()).filter(Boolean);
+    const k = pick("kids"), a = pick("adults"), out = [];
+    if (k.length) out.push("Kids: " + k.join(", "));
+    if (a.length) out.push("Adults: " + a.join(", "));
+    return out.join(" | ");
+  }
+
+  $("send").onclick = async () => {
+    const name = $("name").value.trim();
+    if (!answer) return ($("err").textContent = "Choose an answer above.");
+    if (!name) { $("name").focus(); return ($("err").textContent = "Add the guest’s name so we know who’s coming."); }
+    const data = {
+      name, response: answer,
+      kids: answer === "no" ? 0 : counts.kids,
+      adults: answer === "no" ? 0 : counts.adults,
+      guests: answer === "no" ? "" : guestNames()
+    };
+    $("send").disabled = true; $("send").textContent = "Sending…"; $("err").textContent = "";
+    try {
+      if (demo) {
+        const list = loadDemo().filter(r => r.name.toLowerCase() !== name.toLowerCase());
+        list.push({...data, time: new Date().toISOString()});
+        try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch(e){}
+      } else {
+        const res = await fetch(PARTY.scriptUrl, {method:"POST", body: JSON.stringify(data)});
+        const out = await res.json();
+        if (!out.ok) throw new Error(out.error || "failed");
+      }
+      showThanks(data);
+    } catch (e) {
+      $("err").textContent = "Your RSVP didn’t go through. Check your connection and tap Send RSVP again.";
+    } finally {
+      $("send").disabled = false; $("send").textContent = "Send RSVP";
+    }
+  };
+
+  function showThanks(d){
+    const plural = (n,w) => n + " " + w + (n===1?"":"s");
+    const msgs = {
+      yes:  ["🍿","Your seats are saved!", "We can’t wait to watch with " + d.name + ". " + plural(d.kids,"kid") + " and " + plural(d.adults,"grown-up") + " are on the list."],
+      maybe:["🎬","Thanks for letting us know", "Please update your RSVP by " + dFmt.format(rsvpBy) + " so we can save enough seats."],
+      no:   ["💌","We’ll miss you!", "Thanks for letting us know, " + d.name + ". We’ll eat some popcorn in your honor."]
+    }[d.response];
+    $("tEmoji").textContent = msgs[0]; $("tHead").textContent = msgs[1]; $("tMsg").textContent = msgs[2];
+    $("stub").classList.add("torn");
+    setTimeout(() => { $("stub").classList.add("hide"); $("thanks").classList.remove("hide"); }, reduced ? 0 : 550);
+    if (d.response === "yes") popcorn();
+  }
+  $("again").onclick = () => { $("thanks").classList.add("hide"); $("stub").classList.remove("hide","torn"); };
+
+  /* ---------- popcorn burst ---------- */
+  function kernelShape(){ // a puffy cluster of overlapping blobs
+    const n = 4 + Math.floor(Math.random()*3), blobs = [];
+    for (let i=0;i<n;i++){ const a = i/n*Math.PI*2 + Math.random()*.6, d = 3 + Math.random()*3;
+      blobs.push({x:Math.cos(a)*d, y:Math.sin(a)*d, r:5 + Math.random()*3}); }
+    return blobs;
+  }
+  function popcorn(){
+    if (reduced) return;
+    const c = $("popcorn"), x = c.getContext("2d"), dpr = devicePixelRatio || 1;
+    c.width = innerWidth*dpr; c.height = innerHeight*dpr; x.scale(dpr,dpr);
+    const W = innerWidth, H = innerHeight, g = 0.32;
+    const P = Array.from({length:90}, (_,i) => ({
+      x: W*(0.15 + Math.random()*0.7), y: H + 20 + Math.random()*40,
+      vx: -3 + Math.random()*6, vy: -(10 + Math.random()*9),
+      r: Math.random()*6, vr: -.15 + Math.random()*.3, s: .8 + Math.random()*.7,
+      delay: Math.floor(Math.random()*50), blobs: kernelShape()
+    }));
+    let t = 0;
+    (function frame(){
+      x.clearRect(0,0,W,H);
+      P.forEach(p => {
+        if (t < p.delay) return;
+        p.vy += g; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.scale(p.s,p.s);
+        // fluffy white popcorn with a toasted center
+        x.fillStyle = "#FFF9EC"; x.strokeStyle = "rgba(160,110,40,.35)"; x.lineWidth = 1;
+        p.blobs.forEach(b => { x.beginPath(); x.arc(b.x,b.y,b.r,0,Math.PI*2); x.fill(); x.stroke(); });
+        x.fillStyle = "#FFF9EC"; p.blobs.forEach(b => { x.beginPath(); x.arc(b.x*.7,b.y*.7,b.r*.85,0,Math.PI*2); x.fill(); });
+        x.fillStyle = "#E9B44C"; x.beginPath(); x.arc(0,0,2.6,0,Math.PI*2); x.fill();
+        x.restore();
+      });
+      if (++t < 230) requestAnimationFrame(frame); else x.clearRect(0,0,W,H);
+    })();
+  }
+
+  /* ---------- host view ---------- */
+  function loadDemo(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; } }
+  let pin = "";
+  $("hostBtn").onclick = () => {
+    if (!demo) { pin = prompt("Enter your host PIN") || ""; if (!pin) return; }
+    $("hostPanel").classList.remove("hide"); loadHost();
+    $("hostPanel").scrollIntoView({behavior: reduced ? "auto" : "smooth"});
+  };
+  $("refresh").onclick = loadHost;
+
+  async function loadHost(){
+    $("hostMsg").textContent = "Loading…";
+    let list = [];
+    try {
+      if (demo) list = loadDemo();
+      else {
+        const res = await fetch(PARTY.scriptUrl + "?pin=" + encodeURIComponent(pin));
+        const out = await res.json();
+        if (!out.ok) { $("hostMsg").textContent = out.error === "pin" ? "That PIN doesn’t match. Tap “See responses” to try again." : "Responses couldn’t load. Tap Refresh."; $("rows").replaceChildren(); return; }
+        list = out.rows;
+      }
+    } catch(e){ $("hostMsg").textContent = "Responses couldn’t load. Check your connection and tap Refresh."; return; }
+    render(list);
+  }
+
+  function render(list){
+    const yes = list.filter(r => r.response==="yes");
+    const kids = yes.reduce((s,r)=>s+Number(r.kids||0),0), adults = yes.reduce((s,r)=>s+Number(r.adults||0),0);
+    $("cYes").textContent = kids + adults;
+    $("cYesSub").textContent = kids + " kids, " + adults + " adults";
+    $("cMaybe").textContent = list.filter(r=>r.response==="maybe").length;
+    $("cNo").textContent = list.filter(r=>r.response==="no").length;
+    const label = {yes:"Coming", maybe:"Maybe", no:"Can’t come"}, order = {yes:0, maybe:1, no:2};
+    $("rows").replaceChildren(...list.slice().sort((a,b)=>order[a.response]-order[b.response]).map(r => {
+      const tr = document.createElement("tr");
+      [r.name, null, r.response==="no"?"–":r.kids, r.response==="no"?"–":r.adults, r.guests||""].forEach((v,i) => {
+        const td = document.createElement("td");
+        if (i===1){ const s=document.createElement("span"); s.className="pill "+r.response; s.textContent=label[r.response]||r.response; td.append(s); }
+        else td.textContent = v;
+        tr.append(td);
+      });
+      return tr;
+    }));
+    $("hostMsg").textContent = list.length ? "" : "No RSVPs yet. Share your invite link to start filling seats.";
+  }
+})();
+</script>
+</body>
+</html>
