@@ -12,18 +12,19 @@
    ✏️  EDIT YOUR PARTY DETAILS HERE
    ============================================================ */
 const PARTY = {
-  name: "Ollie",                          // birthday kid's name
-  age: 6,                                 // the age they're turning
-  movie: "Hexed",                              // optional: the movie you're seeing
-  start: "2026-12-05T15:15",              // date + showtime (24-hr)
-  place: "AMC Flation Crossing 14",              // theater name
-  address: "61 West Flatiron Crossing Dr. - Broomfield",     // shown as a map link
-  note: "Please arrive 15 minutes before the ticket time.", "We'll meet un the lobby!"
-  details: [                              // extra info shown at the top (add or remove lines)
-    "We've rented out the whole theater! After the movie, the party moves to our house for pizza, cake, and hanging out."
+  name: "Ollie",                                   // birthday kid's name
+  age: 6,                                          // the age they're turning
+  movie: "Hexed",                                  // optional: the movie you're seeing
+  start: "2026-12-05T15:15",                       // date + showtime (24-hr)
+  place: "AMC Flatiron Crossing 14",               // theater name
+  address: "61 W Flatiron Crossing Dr, Broomfield, CO",  // shown as a map link
+  note: "We've rented out the whole theater! After the movie, the party moves to our house for pizza, cake, and hanging out.",
+  details: [                                       // "Good to know" lines (add or remove)
+    "Please arrive 15 minutes before showtime.",
+    "We'll meet in the lobby!"
   ],
-  hostName: "Cari",                       // who's hosting
-  scriptUrl: "https://script.google.com/macros/s/AKfycbxoZ8uO8T4xvvdPRD0XTjICiaAcNb3ZWgMme0s4hc55nwrNSihMEX05IiJkDiEVYPHY/exec"                           // paste your Apps Script Web App URL here
+  hostName: "Cari",                                // who's hosting
+  scriptUrl: ""                                    // paste your Apps Script Web App URL here
 };
 /* ============================================================ */
 </script>
@@ -81,23 +82,27 @@ main{max-width:520px; margin:0 auto; padding:28px 16px 48px}
 @keyframes chase{0%{opacity:1}33%{opacity:.25}}
 .now{font-size:18px; font-weight:600; letter-spacing:.06em; color:var(--gold); margin:4px 0 2px}
 h1{font-size:clamp(30px, 8.5vw, 42px); line-height:1.05; margin:0; color:#FFF6E0; text-shadow:0 2px 0 var(--curtain-deep)}
-.movie{margin:6px 0 2px; font-size:19px; font-weight:600; color:var(--bulb)}
+/* ---------- feature film strip ---------- */
+.feature{margin:16px 30px 0; background:#1E1410; color:#FFF3D6; border-radius:6px; padding:22px 16px; text-align:center; position:relative}
+.feature::before,.feature::after{ /* sprocket holes */
+  content:""; position:absolute; left:8px; right:8px; height:8px;
+  background:repeating-linear-gradient(90deg, #F7E8C4 0 10px, transparent 10px 20px);
+  border-radius:2px; opacity:.85
+}
+.feature::before{top:6px} .feature::after{bottom:6px}
+.feature .lbl2{font-family:"Barlow Condensed",sans-serif; font-weight:600; font-size:16px; letter-spacing:.08em; color:var(--gold); margin:0}
+.feature .film{font-family:"Alfa Slab One",serif; font-weight:400; font-size:clamp(34px, 11vw, 52px); line-height:1.05; margin:2px 0 0; color:#FFF3D6; text-shadow:0 0 14px rgba(242,193,78,.45); overflow-wrap:anywhere}
 
 /* ---------- extra details ---------- */
-.extra{margin:16px 40px 0; background:var(--field); border:2px dashed var(--red); border-radius:8px; padding:12px 16px}
+.extra{margin:18px 0 0; background:var(--field); border:2px dashed var(--red); border-radius:8px; padding:12px 16px}
 .extra h2{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:20px; color:var(--red); margin:0 0 4px}
 .extra ul{margin:0; padding-left:20px}
 .extra li{margin:3px 0}
 
 /* ---------- details ---------- */
 .top{padding:18px 40px 22px; position:relative}
-.stamp{
-  position:absolute; right:34px; top:8px; width:96px; height:96px; border-radius:50%;
-  border:3px solid var(--red); color:var(--red); display:grid; place-items:center; text-align:center;
-  transform:rotate(-14deg); opacity:.88; line-height:1
-}
-.stamp b{display:block; font-family:"Alfa Slab One",serif; font-weight:400; font-size:44px}
-.stamp span{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:14px}
+.stamp{position:absolute; right:30px; top:4px; width:96px; transform:rotate(8deg)}
+.stamp svg{display:block; width:100%; height:auto; overflow:visible}
 .note{margin:6px 110px 18px 0; font-size:18px}
 .fields{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin:0}
 .fields div{border-top:2px dotted var(--line); padding-top:6px}
@@ -182,9 +187,9 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
 #popcorn{position:fixed; inset:0; pointer-events:none; z-index:20}
 @media (prefers-reduced-motion: reduce){ .stub{transition:none} }
 @media (max-width:420px){
-  .marquee{margin:22px 26px 0} .extra{margin:14px 34px 0}
+  .marquee{margin:22px 26px 0} .feature{margin:14px 26px 0}
   .top{padding:16px 34px 20px} .stub,.thanks{padding-left:34px; padding-right:34px}
-  .stamp{width:80px; height:80px; right:28px} .stamp b{font-size:36px}
+  .stamp{width:80px; right:26px}
   .note{margin-right:84px}
 }
 </style>
@@ -200,17 +205,61 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
       <div class="bulbs t" aria-hidden="true"></div>
       <p class="now cond">Now showing</p>
       <h1 class="slab" id="title"></h1>
-      <p class="movie cond hide" id="movie"></p>
       <div class="bulbs b" aria-hidden="true"></div>
     </header>
 
-    <section class="extra hide" id="extra" aria-labelledby="extraH">
-      <h2 id="extraH">Good to know</h2>
-      <ul id="extraList"></ul>
+    <section class="feature hide" id="feature">
+      <p class="lbl2">Feature presentation</p>
+      <p class="film" id="movie"></p>
     </section>
 
     <section class="top">
-      <div class="stamp" aria-hidden="true"><div><b id="ageNum"></b><span>years old!</span></div></div>
+      <div class="stamp" aria-hidden="true">
+        <svg viewBox="0 0 100 130">
+          <defs><clipPath id="bucket"><path d="M10 54 H90 L80 126 H20 Z"/></clipPath></defs>
+          <g fill="#FFF6E0" stroke="#D9A441" stroke-width="2">
+          <circle cx="22" cy="40" r="13"/>
+          <circle cx="38" cy="30" r="14"/>
+          <circle cx="56" cy="28" r="14"/>
+          <circle cx="73" cy="34" r="13"/>
+          <circle cx="84" cy="46" r="11"/>
+          <circle cx="14" cy="52" r="10"/>
+          <circle cx="30" cy="48" r="12"/>
+          <circle cx="50" cy="44" r="13"/>
+          <circle cx="68" cy="48" r="12"/>
+          <circle cx="44" cy="18" r="11"/>
+          <circle cx="62" cy="16" r="10"/>
+          <circle cx="28" cy="22" r="9"/>
+          <circle cx="79" cy="24" r="9"/>
+          </g>
+          <g fill="#F2C14E" opacity=".8">
+          <circle cx="25" cy="42" r="2.2"/>
+          <circle cx="36" cy="33" r="2.2"/>
+          <circle cx="58" cy="25" r="2.2"/>
+          <circle cx="70" cy="36" r="2.2"/>
+          <circle cx="86" cy="48" r="2.2"/>
+          <circle cx="15" cy="50" r="2.2"/>
+          <circle cx="28" cy="46" r="2.2"/>
+          <circle cx="53" cy="47" r="2.2"/>
+          <circle cx="67" cy="51" r="2.2"/>
+          <circle cx="46" cy="19" r="2.2"/>
+          <circle cx="60" cy="18" r="2.2"/>
+          <circle cx="29" cy="23" r="2.2"/>
+          <circle cx="78" cy="26" r="2.2"/>
+          </g>
+          <g clip-path="url(#bucket)">
+            <rect x="0" y="50" width="100" height="80" fill="#FFF6E0"/>
+            <rect x="10" y="50" width="12" height="80" fill="#B3192E"/>
+            <rect x="34" y="50" width="12" height="80" fill="#B3192E"/>
+            <rect x="58" y="50" width="12" height="80" fill="#B3192E"/>
+            <rect x="82" y="50" width="12" height="80" fill="#B3192E"/>
+          </g>
+          <path d="M10 54 H90 L80 126 H20 Z" fill="none" stroke="#7D0F1F" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="6" y="50" width="88" height="9" rx="3" fill="#B3192E" stroke="#7D0F1F" stroke-width="2.5"/>
+          <circle cx="50" cy="92" r="19" fill="#FFF6E0" stroke="#7D0F1F" stroke-width="2.5"/>
+          <text id="ageNum" x="50" y="102" text-anchor="middle" font-family="Alfa Slab One, Rockwell, Georgia, serif" font-size="28" fill="#B3192E"></text>
+        </svg>
+      </div>
       <p class="note" id="note"></p>
       <dl class="fields">
         <div><dt>Date</dt><dd id="date"></dd></div>
@@ -218,13 +267,17 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
         <div class="wide"><dt>Theater</dt><dd id="where"></dd></div>
         <div class="wide"><dt>Hosted by</dt><dd id="host"></dd></div>
       </dl>
+      <section class="extra hide" id="extra" aria-labelledby="extraH">
+        <h2 id="extraH">Good to know</h2>
+        <ul id="extraList"></ul>
+      </section>
       <button class="cal" id="calBtn" type="button">📅 Add to my calendar</button>
     </section>
 
     <div class="tear" aria-hidden="true"><span>✂ Tear here to RSVP</span></div>
 
     <section class="stub" id="stub" aria-labelledby="rsvpH">
-      <div class="admit"><span class="slab">Admit one</span><span class="cond" id="ticketNo"></span></div>
+      <div class="admit"><span class="slab">RSVP</span><span class="cond" id="ticketNo"></span></div>
       <h2 id="rsvpH">Will you be there?</h2>
       <p class="due" id="due"></p>
 
@@ -306,12 +359,12 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
 
   /* ---------- fill invite ---------- */
   const start = new Date(PARTY.start);
-  const end = new Date(start.getTime() + PARTY.hours*3600000);
+  const end = PARTY.hours ? new Date(start.getTime() + PARTY.hours*3600000) : null;
   const dFmt = new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"});
   const tFmt = new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"});
   const possessive = /s$/i.test(PARTY.name) ? PARTY.name + "’" : PARTY.name + "’s";
   $("title").textContent = possessive + " " + ordinal(PARTY.age) + " Birthday";
-  if (PARTY.movie) { $("movie").textContent = "Feature presentation: " + PARTY.movie; $("movie").classList.remove("hide"); }
+  if (PARTY.movie) { $("movie").textContent = PARTY.movie; $("feature").classList.remove("hide"); }
   $("ageNum").textContent = PARTY.age;
   $("note").textContent = PARTY.note;
   const extras = (PARTY.details || []).filter(s => String(s).trim());
@@ -320,15 +373,16 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
     $("extra").classList.remove("hide");
   }
   $("date").textContent = dFmt.format(start);
-  $("time").textContent = tFmt.format(start) + "–" + tFmt.format(end);
+  $("time").textContent = tFmt.format(start) + (end ? "–" + tFmt.format(end) : "");
   const map = document.createElement("a");
   map.href = "https://maps.google.com/?q=" + encodeURIComponent(PARTY.place + ", " + PARTY.address);
   map.target = "_blank"; map.rel = "noopener";
   map.textContent = PARTY.place;
   $("where").append(map, document.createElement("br"), PARTY.address);
   $("host").textContent = PARTY.hostName;
-  const rsvpBy = new Date(PARTY.rsvpBy + "T23:59");
-  $("due").textContent = "Please reply by " + dFmt.format(rsvpBy) + ".";
+  const rsvpBy = PARTY.rsvpBy ? new Date(PARTY.rsvpBy + "T23:59") : null;
+  if (rsvpBy) $("due").textContent = "Please reply by " + dFmt.format(rsvpBy) + ".";
+  else $("due").classList.add("hide");
   $("ticketNo").textContent = "No. " + String(start.getMonth()+1).padStart(2,"0") + String(start.getDate()).padStart(2,"0") + "0" + PARTY.age;
   document.title = "You’re invited to " + possessive + " movie party!";
   if (demo) $("demo").classList.remove("hide");
@@ -340,7 +394,7 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
     const f = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
     const esc = s => String(s).replace(/[,;\\]/g, m => "\\"+m);
     const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//RSVP//EN","BEGIN:VEVENT",
-      "UID:"+Date.now()+"@rsvp","DTSTAMP:"+f(new Date()),"DTSTART:"+f(start),"DTEND:"+f(end),
+      "UID:"+Date.now()+"@rsvp","DTSTAMP:"+f(new Date()),"DTSTART:"+f(start), ...(end ? ["DTEND:"+f(end)] : []),
       "SUMMARY:"+esc(possessive+" birthday movie party"),"LOCATION:"+esc(PARTY.place+", "+PARTY.address),
       "DESCRIPTION:"+esc(PARTY.note),"END:VEVENT","END:VCALENDAR"].join("\r\n");
     const a = document.createElement("a");
@@ -362,33 +416,28 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
     renderNames();
   });
 
-  /* one name box per person, keeping anything already typed */
-  const typed = {kids:[], adults:[]};
+  /* one name box per attendee, keeping anything already typed */
+  const typed = [];
   function renderNames(){
-    document.querySelectorAll("#names input").forEach(i => typed[i.dataset.g][i.dataset.n] = i.value);
-    const wrap = $("names"); wrap.replaceChildren();
-    [["kids","Kid"],["adults","Grown-up"]].forEach(([g,word]) => {
-      if (!counts[g]) return;
-      const h = document.createElement("p"); h.className = "grp";
-      h.textContent = counts[g] === 1 ? word + "’s name" : word + "s’ names";
-      wrap.append(h);
-      for (let n=0; n<counts[g]; n++){
-        const i = document.createElement("input");
-        i.type = "text"; i.maxLength = 40; i.dataset.g = g; i.dataset.n = n;
-        i.placeholder = word + " " + (n+1);
-        i.setAttribute("aria-label", word + " " + (n+1) + " name");
-        i.value = typed[g][n] || "";
-        wrap.append(i);
-      }
-    });
+    document.querySelectorAll("#names input").forEach(i => typed[i.dataset.n] = i.value);
+    const total = counts.kids + counts.adults, wrap = $("names");
+    wrap.replaceChildren();
+    if (!total) return;
+    const h = document.createElement("p"); h.className = "grp";
+    h.textContent = total === 1 ? "Attendee’s name" : "Attendees’ names";
+    wrap.append(h);
+    for (let n=0; n<total; n++){
+      const i = document.createElement("input");
+      i.type = "text"; i.maxLength = 40; i.dataset.n = n;
+      i.placeholder = "Attendee " + (n+1);
+      i.setAttribute("aria-label", "Attendee " + (n+1) + " name");
+      i.value = typed[n] || "";
+      wrap.append(i);
+    }
   }
   renderNames();
   function guestNames(){
-    const pick = g => Array.from(document.querySelectorAll('#names input[data-g="'+g+'"]')).map(i => i.value.trim()).filter(Boolean);
-    const k = pick("kids"), a = pick("adults"), out = [];
-    if (k.length) out.push("Kids: " + k.join(", "));
-    if (a.length) out.push("Adults: " + a.join(", "));
-    return out.join(" | ");
+    return Array.from(document.querySelectorAll("#names input")).map(i => i.value.trim()).filter(Boolean).join(", ");
   }
 
   $("send").onclick = async () => {
@@ -424,7 +473,7 @@ th{font-family:"Barlow Condensed",sans-serif; font-size:16px; color:var(--soft)}
     const plural = (n,w) => n + " " + w + (n===1?"":"s");
     const msgs = {
       yes:  ["🍿","Your seats are saved!", "We can’t wait to watch with " + d.name + ". " + plural(d.kids,"kid") + " and " + plural(d.adults,"grown-up") + " are on the list."],
-      maybe:["🎬","Thanks for letting us know", "Please update your RSVP by " + dFmt.format(rsvpBy) + " so we can save enough seats."],
+      maybe:["🎬","Thanks for letting us know", (rsvpBy ? "Please update your RSVP by " + dFmt.format(rsvpBy) : "Please update your RSVP once you know") + " so we can save enough seats."],
       no:   ["💌","We’ll miss you!", "Thanks for letting us know, " + d.name + ". We’ll eat some popcorn in your honor."]
     }[d.response];
     $("tEmoji").textContent = msgs[0]; $("tHead").textContent = msgs[1]; $("tMsg").textContent = msgs[2];
